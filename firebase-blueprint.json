@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "Application": {
+      "title": "Application",
+      "description": "Student financial aid application details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Firestore document ID" },
+        "studentId": { "type": "string", "description": "Auto-generated human-readable ID (e.g. SF-2026-X12B)" },
+        "fullName": { "type": "string", "description": "Full name of the student" },
+        "fatherName": { "type": "string", "description": "Father or Guardian's name" },
+        "cnic": { "type": "string", "description": "CNIC or B-Form number of the student" },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "address": { "type": "string", "description": "Residential address" },
+        "schoolName": { "type": "string", "description": "School, college, or university name" },
+        "gradeClass": { "type": "string", "description": "Class, semester, or grade levels" },
+        "monthlyIncome": { "type": "number", "description": "Monthly family income in PKR" },
+        "guardianOccupation": { "type": "string", "description": "Occupation of the guardian" },
+        "familyMembers": { "type": "number", "description": "Total family member count" },
+        "earningMembers": { "type": "number", "description": "Number of earning family members" },
+        "houseType": { "type": "string", "description": "Type of accommodation: owned or rented" },
+        "reasonForHelp": { "type": "string", "description": "Reason for financial assistance" },
+        "isOrphan": { "type": "boolean", "description": "Whether the student is an orphan" },
+        "isDisabled": { "type": "boolean", "description": "Whether the student has a physical disability" },
+        "academicMarks": { "type": "number", "description": "Academic percentage or GPA marks" },
+        "stepfundNeeded": { "type": "number", "description": "Requested scholarship/StepFund monthly amount in PKR" },
+        "needScore": { "type": "number", "description": "Automated poverty priority verification score out of 100" },
+        "status": { "type": "string", "description": "Verification status: Pending, Under Review, Verified, Approved, Rejected", "enum": ["Pending", "Under Review", "Verified", "Approved", "Rejected"] },
+        "adminNotes": { "type": "string", "description": "Internal verification or decision notes from foundation admins" },
+        "documents": { "type": "object", "description": "Map of doc types to file info / Base64 data (feeSlip, resultCard, utilityBill, studentIdCard, recommendation, houseImages)" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when application was submitted" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp when application was last reviewed or updated" }
+      },
+      "required": ["fullName", "fatherName", "cnic", "phone", "address", "schoolName", "gradeClass", "monthlyIncome", "academicMarks", "stepfundNeeded"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized administrator profiles",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Authorized Google Sign-in email" },
+        "role": { "type": "string", "description": "Admin privileges role level", "enum": ["SuperAdmin", "Reviewer"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/applications/{applicationId}": {
+      "schema": "Application",
+      "description": "Student aid applications collection"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Authorized administrators list"
+    }
+  }
+}

@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net: Default Deny All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Global Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "jawadforrandomsearch@gmail.com" ||
+        request.auth.token.email == "admin@sadiqon-foundation.org" ||
+        (request.auth.token.email_verified == true && exists(/databases/$(database)/documents/admins/$(request.auth.uid)))
+      );
+    }
+
+    function isValidId(id) {
+       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Application Specific Helper ---
+    function isValidApplication(data) {
+      return data.fullName is string && data.fullName.size() <= 150 &&
+             data.fatherName is string && data.fatherName.size() <= 150 &&
+             data.cnic is string && data.cnic.size() <= 30 &&
+             data.phone is string && data.phone.size() <= 30 &&
+             data.address is string && data.address.size() <= 500 &&
+             data.schoolName is string && data.schoolName.size() <= 200 &&
+             data.gradeClass is string && data.gradeClass.size() <= 100 &&
+             data.monthlyIncome is number && data.monthlyIncome >= 0 && data.monthlyIncome <= 10000000 &&
+             data.academicMarks is number && data.academicMarks >= 0 && data.academicMarks <= 1000 &&
+             data.stepfundNeeded is number && data.stepfundNeeded >= 0 && data.stepfundNeeded <= 10000000 &&
+             data.isOrphan is bool &&
+             data.isDisabled is bool &&
+             data.needScore is number && data.needScore >= 0 && data.needScore <= 100 &&
+             data.status in ["Pending", "Under Review", "Verified", "Approved", "Rejected"];
+    }
+
+    // 2. Collection Rules: Applications
+    match /applications/{applicationId} {
+      // Allow single read for anyone to fetch status of their application by ID
+      allow get: if true;
+
+      // Allow admin to list all applications
+      allow list: if isAdmin();
+
+      // Allow anyone (guest students) to submit a new application
+      allow create: if isValidApplication(incoming()) && 
+                       incoming().status == "Pending" && 
+                       incoming().createdAt == request.time;
+
+      // Only admins can update applications
+      allow update: if isAdmin() && 
+                       isValidApplication(incoming()) && 
+                       incoming().createdAt == existing().createdAt;
+
+      // Only admins can delete records
+      allow delete: if isAdmin();
+    }
+
+    // 3. Collection Rules: Admins
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      // Only another admin can add a new admin
+      allow write: if isAdmin();
+    }
+  }
+}

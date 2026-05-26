@@ -1,0 +1,6 @@
+{
+  "name": "SadiqoonfoundationAdmin",
+  "description": "A modern web portal for Sadiqon Foundation, an NGO dedicated to supporting underprivileged students financially with real-time student applications, an automated poverty verification system, secure admin analytics, and status tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
